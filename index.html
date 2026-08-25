@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menú de Pausas Activas</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+    h1 { font-size: 1.4rem; margin-bottom: 8px; }
+    p { color: #64748b; font-size: 0.9rem; margin-bottom: 20px; }
+    .menu { display: flex; flex-direction: column; gap: 12px; }
+    .btn {
+      display: block;
+      padding: 14px;
+      background: #2563eb;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background 0.2s;
+    }
+    .btn:active { background: #1d4ed8; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h1>🎯 Pausas Activas</h1>
+    <p>Selecciona la actividad interactiva que deseas abrir:</p>
+
+    <div class="menu">
+      <!-- Reemplaza los enlaces (href) por los nombres de tus archivos subidos -->
+      <a href="diferencias.html" class="btn">🔍 Encuentra las 5 Diferencias</a>
+      <a href="sopa.html" class="btn">🔠 Sopa de Letras</a>
+      <a href="memoria.html" class="btn">🧠 Juego de Memoria</a>
+    </div>
+  </div>
+
+</body>
+</html>
