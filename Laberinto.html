@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lleva el EPP al Accidentado - SEINSAO (Nivel 2)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background-color: #000a28; color: #ffffff;
+      display: flex; flex-direction: column; align-items: center;
+      min-height: 100vh; padding: 15px;
+    }
+    .container {
+      max-width: 1000px; width: 100%;
+      background: #001254; border: 3px solid #00e676;
+      border-radius: 16px; padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+    }
+    header { text-align: center; margin-bottom: 15px; }
+    .level-badge {
+      background: #ef4444; color: white; padding: 3px 12px;
+      border-radius: 20px; font-weight: bold; font-size: 0.85rem;
+      display: inline-block; margin-bottom: 5px; text-transform: uppercase;
+    }
+    h1 { font-size: 2rem; font-weight: 900; letter-spacing: 1px; color: #ffffff; text-transform: uppercase; font-style: italic; }
+    h2 { font-size: 1.3rem; color: #00e676; font-weight: 400; font-style: italic; margin-top: -3px; }
+    
+    .game-layout { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; align-items: flex-start; margin-top: 10px; }
+    
+    .maze-board {
+      display: grid; grid-template-columns: repeat(15, 30px); grid-template-rows: repeat(15, 30px);
+      gap: 2px; background: #ffffff; padding: 6px; border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0, 230, 118, 0.3);
+    }
+    .cell {
+      width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+      font-size: 0.95rem; border-radius: 2px; cursor: pointer; user-select: none; transition: all 0.15s ease;
+    }
+    .wall { background-color: #000a28; cursor: not-allowed; }
+    .path { background-color: #e2e8f0; }
+    .path:hover { background-color: #cbd5e1; }
+    .start-epp { background-color: #facc15; }
+    .goal-accident { background-color: #ef4444; }
+    .obstacle { background-color: #fee2e2; border: 1px dashed #ef4444; }
+    .key-epp { background-color: #3b82f6; color: white; }
+    .visited { background-color: #22c55e !important; color: white; }
+    .player { background-color: #f59e0b !important; transform: scale(1.1); animation: pulse 0.7s infinite alternate; }
+    @keyframes pulse { from { transform: scale(0.95); } to { transform: scale(1.15); } }
+    
+    .sidebar { flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 12px; }
+    .card { background: #000c30; border: 1px solid #1e3a8a; padding: 14px; border-radius: 10px; }
+    .card h3 { color: #00e676; font-size: 1rem; margin-bottom: 6px; }
+    
+    .checklist { list-style: none; margin-top: 5px; font-size: 0.85rem; }
+    .checklist li { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; color: #94a3b8; }
+    .checklist li.completed { color: #00e676; font-weight: bold; }
+    
+    .timer-box { font-size: 1.4rem; font-weight: bold; color: #facc15; text-align: center; margin-top: 5px; }
+    .timer-box.warning { color: #ef4444; animation: blink 0.5s infinite alternate; }
+    @keyframes blink { from { opacity: 1; } to { opacity: 0.4; } }
+
+    .brand-box {
+      display: flex; align-items: center; gap: 10px; margin-top: 5px; padding: 8px 12px;
+      background: #00e676; color: #001254; font-weight: 900; border-radius: 8px;
+    }
+    .btn {
+      background: #00e676; color: #001254; border: none; padding: 10px; font-size: 0.95rem;
+      font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; text-transform: uppercase;
+    }
+    .btn:hover { background: #00c853; }
+    #status-message { margin-top: 8px; padding: 8px; border-radius: 6px; font-weight: bold; text-align: center; display: none; font-size: 0.85rem; }
+    .msg-win { background: #00e676; color: #001254; }
+    .msg-lose { background: #ef4444; color: #ffffff; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <span class="level-badge">Nivel 2: Desafío Avanzado SST</span>
+      <h1>LLEVA EL EPP</h1>
+      <h2>AL ACCIDENTADO</h2>
+    </header>
+
+    <div class="game-layout">
+      <div id="maze" class="maze-board"></div>
+
+      <div class="sidebar">
+        <div class="card">
+          <h3>⏱️ Tiempo Restante</h3>
+          <div id="timer" class="timer-box">01:00</div>
+        </div>
+
+        <div class="card">
+          <h3>📋 Objetivos de Rescate</h3>
+          <ul class="checklist">
+            <li id="chk-epp">🔲 Recoger Casco y Guantes (🪖)</li>
+            <li id="chk-botiquin">🔲 Recoger Botiquín SST (🧰)</li>
+            <li id="chk-accidentado">🔲 Llegar al Accidentado (👨‍🦽)</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>📊 Estado</h3>
+          <p style="font-size: 0.85rem;"><strong>Pasos:</strong> <span id="steps">0</span></p>
+          <div id="status-message"></div>
+          <button class="btn" style="margin-top: 10px;" onclick="resetMaze()">Reiniciar Nivel</button>
+        </div>
+
+        <div class="brand-box">
+          <span style="font-size: 1.3rem;">🛡️</span>
+          <div>
+            <div>SEINSAO</div>
+            <div style="font-size: 0.6rem; font-weight: normal;">SEGURIDAD INDUSTRIAL Y SALUD OCUPACIONAL</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 0: Pared, 1: Camino, 2: Inicio Rescatista (14,14), 3: Accidentado (0,0)
+    // 4: Riesgos SST (⚠️ - Pierdes), 5: EPP (🪖 - Requisito 1), 6: Botiquín (🧰 - Requisito 2)
+    // Tablero ampliado a 15x15 con 6 rutas y solo 1 válida que recoge todo
+    const mazeData = [
+      [3, 1, 0, 1, 4, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1],
+      [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1],
+      [1, 1, 1, 1, 0, 1, 1, 4, 0, 1, 1, 1, 0, 1, 1],
+      [1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0],
+      [1, 1, 6, 1, 1, 1, 0, 1, 1, 1, 4, 1, 1, 1, 0],
+      [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+      [1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1],
+      [1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1],
+      [1, 1, 4, 0, 1, 1, 0, 5, 1, 1, 0, 1, 1, 4, 1],
+      [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+      [1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1],
+      [1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+      [1, 4, 1, 1, 1, 1, 0, 1, 1, 4, 1, 1, 1, 0, 1],
+      [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2]
+    ];
+
+    let playerPos = { r: 14, c: 14 };
+    let path = [{ r: 14, c: 14 }];
+    let steps = 0;
+    let gameOver = false;
+    let hasEPP = false;
+    let hasBotiquin = false;
+    let timeLeft = 60;
+    let timerId = null;
+
+    function startTimer() {
+      clearInterval(timerId);
+      timeLeft = 60;
+      updateTimerDisplay();
+      timerId = setInterval(() => {
+        if (gameOver) return;
+        timeLeft--;
+        updateTimerDisplay();
+        if (timeLeft <= 0) {
+          gameOver = true;
+          clearInterval(timerId);
+          showStatus("⏳ ¡Tiempo agotado! La emergencia no fue atendida a tiempo.", "msg-lose");
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const el = document.getElementById("timer");
+      const secs = timeLeft < 10 ? "0" + timeLeft : timeLeft;
+      el.innerText = `00:${secs}`;
+      if (timeLeft <= 10) el.classList.add("warning");
+      else el.classList.remove("warning");
+    }
+
+    function renderBoard() {
+      const board = document.getElementById("maze");
+      board.innerHTML = "";
+
+      for (let r = 0; r < 15; r++) {
+        for (let c = 0; c < 15; c++) {
+          const cell = document.createElement("div");
+          const val = mazeData[r][c];
+
+          cell.classList.add("cell");
+
+          if (val === 0) cell.classList.add("wall");
+          else if (val === 1) cell.classList.add("path");
+          else if (val === 2) cell.classList.add("start-epp");
+          else if (val === 3) cell.classList.add("goal-accident");
+          else if (val === 4) cell.classList.add("obstacle");
+          else if (val === 5) cell.classList.add("key-epp");
+          else if (val === 6) cell.classList.add("key-epp");
+
+          if (r === playerPos.r && c === playerPos.c) {
+            cell.classList.add("player");
+            cell.innerHTML = "🏃";
+          } else if (path.some(p => p.r === r && p.c === c)) {
+            cell.classList.add("visited");
+          } else if (val === 3) {
+            cell.innerHTML = "👨‍🦽";
+          } else if (val === 4) {
+            cell.innerHTML = "⚠️";
+          } else if (val === 5 && !hasEPP) {
+            cell.innerHTML = "🪖";
+          } else if (val === 6 && !hasBotiquin) {
+            cell.innerHTML = "🧰";
+          }
+
+          cell.addEventListener("click", () => handleMove(r, c));
+          board.appendChild(cell);
+        }
+      }
+    }
+
+    function handleMove(r, c) {
+      if (gameOver) return;
+
+      const dr = Math.abs(r - playerPos.r);
+      const dc = Math.abs(c - playerPos.c);
+
+      if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
+        const val = mazeData[r][c];
+        if (val === 0) return;
+
+        playerPos = { r, c };
+        path.push({ r, c });
+        steps++;
+        document.getElementById("steps").innerText = steps;
+
+        if (val === 5) {
+          hasEPP = true;
+          document.getElementById("chk-epp").innerHTML = "✅ EPP Recogido (🪖)";
+          document.getElementById("chk-epp").classList.add("completed");
+        } else if (val === 6) {
+          hasBotiquin = true;
+          document.getElementById("chk-botiquin").innerHTML = "✅ Botiquín Recogido (🧰)";
+          document.getElementById("chk-botiquin").classList.add("completed");
+        } else if (val === 4) {
+          gameOver = true;
+          clearInterval(timerId);
+          showStatus("⚠️ ¡Accidente! Caíste en una zona de riesgo no evaluada.", "msg-lose");
+        } else if (val === 3) {
+          if (hasEPP && hasBotiquin) {
+            gameOver = true;
+            clearInterval(timerId);
+            document.getElementById("chk-accidentado").innerHTML = "✅ Atendido con éxito (👨‍🦽)";
+            document.getElementById("chk-accidentado").classList.add("completed");
+            showStatus("🎉 ¡Misión SST Cumplida! Equipamiento completo y rescate exitoso.", "msg-win");
+          } else {
+            gameOver = true;
+            clearInterval(timerId);
+            showStatus("❌ ¡Atención Incompleta! Llegaste al accidentado sin todo el equipo necesario (EPP y Botiquín).", "msg-lose");
+          }
+        }
+
+        renderBoard();
+      }
+    }
+
+    function showStatus(msg, cssClass) {
+      const el = document.getElementById("status-message");
+      el.innerText = msg;
+      el.className = cssClass;
+      el.style.display = "block";
+    }
+
+    function resetMaze() {
+      playerPos = { r: 14, c: 14 };
+      path = [{ r: 14, c: 14 }];
+      steps = 0;
+      gameOver = false;
+      hasEPP = false;
+      hasBotiquin = false;
+      
+      document.getElementById("steps").innerText = "0";
+      document.getElementById("status-message").style.display = "none";
+      document.getElementById("chk-epp").innerHTML = "🔲 Recoger Casco y Guantes (🪖)";
+      document.getElementById("chk-epp").classList.remove("completed");
+      document.getElementById("chk-botiquin").innerHTML = "🔲 Recoger Botiquín SST (🧰)";
+      document.getElementById("chk-botiquin").classList.remove("completed");
+      document.getElementById("chk-accidentado").innerHTML = "🔲 Llegar al Accidentado (👨‍🦽)";
+      document.getElementById("chk-accidentado").classList.remove("completed");
+      
+      startTimer();
+      renderBoard();
+    }
+
+    startTimer();
+    renderBoard();
+  </script>
+</body>
+</html>

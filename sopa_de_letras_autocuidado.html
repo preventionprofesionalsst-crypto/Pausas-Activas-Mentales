@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sopa de Letras - Seguridad y Autocuidado</title>
+  <style>
+    :root {
+      --bg-dark: #121820;
+      --card-bg: #1e2632;
+      --accent-yellow: #f1c40f;
+      --accent-teal: #1abc9c;
+      --text-light: #ecf0f1;
+      --success-green: #2ecc71;
+      --error-red: #e74c3c;
+      --border-color: #2c3e50;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 10px;
+      border-bottom: 4px solid var(--accent-yellow);
+      margin-bottom: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+      color: var(--accent-yellow);
+      margin: 0 0 10px 0;
+      font-size: 1.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .instruction {
+      color: #bdc3c7;
+      font-size: 1.05rem;
+      margin: 0;
+    }
+
+    .dashboard {
+      display: flex;
+      justify-content: space-around;
+      background: var(--card-bg);
+      padding: 15px 20px;
+      border-radius: 10px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      border: 1px solid var(--border-color);
+    }
+
+    .dash-item {
+      font-size: 1.2rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dash-item span {
+      color: var(--accent-yellow);
+      font-size: 1.4rem;
+    }
+
+    .game-section {
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: 10px;
+      margin-bottom: 25px;
+      border-left: 6px solid var(--accent-teal);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .word-search-layout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+      align-items: flex-start;
+      margin-top: 15px;
+    }
+
+    .word-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 38px);
+      gap: 5px;
+      justify-content: center;
+      user-select: none;
+    }
+
+    .letter-btn {
+      width: 38px;
+      height: 38px;
+      background: #2c3e50;
+      border: 1px solid #34495e;
+      color: #fff;
+      font-weight: bold;
+      font-size: 1.1rem;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .letter-btn:hover {
+      background: #34495e;
+      border-color: var(--accent-yellow);
+    }
+
+    .letter-btn.selected {
+      background: var(--accent-yellow);
+      color: #121820;
+    }
+
+    .letter-btn.found {
+      background: var(--success-green);
+      color: #fff;
+      border-color: #27ae60;
+    }
+
+    .word-list-container {
+      background: #161c24;
+      padding: 20px;
+      border-radius: 8px;
+      min-width: 220px;
+      border: 1px solid var(--border-color);
+    }
+
+    .word-list-container h3 {
+      margin-top: 0;
+      color: var(--accent-yellow);
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+      font-size: 1.1rem;
+    }
+
+    .word-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .word-item {
+      padding: 10px 14px;
+      margin: 8px 0;
+      background: #242d3c;
+      border-radius: 6px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .word-item.found {
+      background: var(--success-green);
+      color: #fff;
+      text-decoration: line-through;
+    }
+
+    .controls {
+      text-align: center;
+      margin-top: 25px;
+    }
+
+    .btn-action {
+      background: var(--accent-yellow);
+      color: #121820;
+      border: none;
+      padding: 12px 28px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-action:hover {
+      background: #f39c12;
+    }
+
+    .btn-action:active {
+      transform: scale(0.98);
+    }
+
+    .btn-reset {
+      background: var(--error-red);
+      color: white;
+    }
+
+    .btn-reset:hover {
+      background: #c0392b;
+    }
+
+    @media (max-width: 650px) {
+      .word-grid {
+        grid-template-columns: repeat(10, 30px);
+        gap: 3px;
+      }
+      .letter-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+      }
+      .dashboard {
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>🦺 Sopa de Letras – Seguridad y Autocuidado</h1>
+      <p class="instruction"><strong>Instrucción:</strong> Encuentra las 6 palabras relacionadas con seguridad y autocuidado.</p>
+    </header>
+
+    <!-- Tablero de Estado -->
+    <div class="dashboard">
+      <div class="dash-item">⏱️ Tiempo: <span id="timer">10:00</span></div>
+      <div class="dash-item">🏆 Puntos: <span id="score">0</span>/150</div>
+    </div>
+
+    <!-- Módulo Sopa de Letras -->
+    <div class="game-section">
+      <p style="margin-top:0;">Haz clic en las letras en orden para formar las palabras (pueden estar en horizontal, vertical o diagonal, de izquierda a derecha, derecha a izquierda, de arriba hacia abajo o de abajo hacia arriba):</p>
+      
+      <div class="word-search-layout">
+        <div class="word-grid" id="grid"></div>
+        
+        <div class="word-list-container">
+          <h3 id="word-list-title">Palabras (0/6):</h3>
+          <ul class="word-list">
+            <li class="word-item" id="w-CASCO">CASCO <span>❌</span></li>
+            <li class="word-item" id="w-AGUA">AGUA <span>❌</span></li>
+            <li class="word-item" id="w-VIDA">VIDA <span>❌</span></li>
+            <li class="word-item" id="w-SALUD">SALUD <span>❌</span></li>
+            <li class="word-item" id="w-PAUSA">PAUSA <span>❌</span></li>
+            <li class="word-item" id="w-EPP">EPP <span>❌</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="btn-action btn-reset" onclick="resetGame()">🔄 Nueva Sopa de Letras</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Variables globales
+    let score = 0;
+    let timeLeft = 600; // 10 minutos
+    let timerInterval;
+
+    const WORDS = ["CASCO", "AGUA", "VIDA", "SALUD", "PAUSA", "EPP"];
+    const GRID_SIZE = 10;
+    let gridMatrix = [];
+    let placedWords = {};
+
+    let selectedButtons = [];
+    let selectedCoords = [];
+
+    // 8 Direcciones posibles: [deltaRow, deltaCol]
+    // Horizontal (Izq-Der / Der-Izq), Vertical (Arriba-Abajo / Abajo-Arriba), Diagonales (4 sentidos)
+    const DIRECTIONS = [
+      [0, 1],   // Horizontal Normal
+      [0, -1],  // Horizontal Invertido
+      [1, 0],   // Vertical Normal (Arriba hacia abajo)
+      [-1, 0],  // Vertical Invertido (Abajo hacia arriba)
+      [1, 1],   // Diagonal Abajo-Derecha
+      [-1, -1], // Diagonal Arriba-Izquierda
+      [1, -1],  // Diagonal Abajo-Izquierda
+      [-1, 1]   // Diagonal Arriba-Derecha
+    ];
+
+    function generateRandomGrid() {
+      gridMatrix = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(''));
+      placedWords = {};
+
+      WORDS.forEach(word => {
+        let placed = false;
+        let attempts = 0;
+
+        while (!placed && attempts < 300) {
+          attempts++;
+          const dir = DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
+          const startR = Math.floor(Math.random() * GRID_SIZE);
+          const startC = Math.floor(Math.random() * GRID_SIZE);
+
+          if (canPlaceWord(word, startR, startC, dir)) {
+            const coords = [];
+            for (let i = 0; i < word.length; i++) {
+              const r = startR + dir[0] * i;
+              const c = startC + dir[1] * i;
+              gridMatrix[r][c] = word[i];
+              coords.push([r, c]);
+            }
+            placedWords[word] = { found: false, coords: coords };
+            placed = true;
+          }
+        }
+      });
+
+      // Rellenar celdas vacías con letras aleatorias
+      const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          if (gridMatrix[r][c] === '') {
+            gridMatrix[r][c] = alphabet[Math.floor(Math.random() * alphabet.length)];
+          }
+        }
+      }
+    }
+
+    function canPlaceWord(word, startR, startC, dir) {
+      for (let i = 0; i < word.length; i++) {
+        const r = startR + dir[0] * i;
+        const c = startC + dir[1] * i;
+
+        if (r < 0 || r >= GRID_SIZE || c < 0 || c >= GRID_SIZE) {
+          return false;
+        }
+
+        if (gridMatrix[r][c] !== '' && gridMatrix[r][c] !== word[i]) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function initTimer() {
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          alert("⏰ ¡Tiempo finalizado! Pausa activa concluida.");
+        } else {
+          timeLeft--;
+          let minutes = Math.floor(timeLeft / 60);
+          let seconds = timeLeft % 60;
+          document.getElementById('timer').innerText = 
+            `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+      }, 1000);
+    }
+
+    function createGrid() {
+      const gridContainer = document.getElementById('grid');
+      gridContainer.innerHTML = '';
+      
+      for (let r = 0; r < GRID_SIZE; r++) {
+        for (let c = 0; c < GRID_SIZE; c++) {
+          const btn = document.createElement('button');
+          btn.classList.add('letter-btn');
+          btn.innerText = gridMatrix[r][c];
+          btn.dataset.row = r;
+          btn.dataset.col = c;
+          btn.onclick = () => selectLetter(btn, r, c);
+          gridContainer.appendChild(btn);
+        }
+      }
+    }
+
+    function selectLetter(btn, r, c) {
+      if (btn.classList.contains('found')) return;
+
+      // Deseleccionar si se vuelve a hacer clic en la última letra
+      if (selectedButtons.length > 0 && selectedButtons[selectedButtons.length - 1] === btn) {
+        btn.classList.remove('selected');
+        selectedButtons.pop();
+        selectedCoords.pop();
+        return;
+      }
+
+      btn.classList.add('selected');
+      selectedButtons.push(btn);
+      selectedCoords.push([r, c]);
+
+      checkSelection();
+    }
+
+    function checkSelection() {
+      for (let word in placedWords) {
+        if (!placedWords[word].found) {
+          const targetCoords = placedWords[word].coords;
+          
+          if (areCoordsEqual(selectedCoords, targetCoords)) {
+            placedWords[word].found = true;
+            markWordFound(word, targetCoords);
+            return;
+          }
+        }
+      }
+    }
+
+    function areCoordsEqual(arr1, arr2) {
+      if (arr1.length !== arr2.length) return false;
+      for (let i = 0; i < arr1.length; i++) {
+        if (arr1[i][0] !== arr2[i][0] || arr1[i][1] !== arr2[i][1]) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function markWordFound(word, coords) {
+      coords.forEach(([r, c]) => {
+        const btn = document.querySelector(`.letter-btn[data-row="${r}"][data-col="${c}"]`);
+        if (btn) {
+          btn.classList.remove('selected');
+          btn.classList.add('found');
+        }
+      });
+
+      const listItem = document.getElementById(`w-${word}`);
+      if (listItem) {
+        listItem.classList.add('found');
+        listItem.querySelector('span').innerText = '✅';
+      }
+
+      selectedButtons = [];
+      selectedCoords = [];
+
+      addScore(25);
+
+      let foundCount = Object.values(placedWords).filter(w => w.found).length;
+      document.getElementById('word-list-title').innerText = `Palabras (${foundCount}/6):`;
+
+      if (foundCount === 6) {
+        setTimeout(() => {
+          alert("🎉 ¡Excelente trabajo! Has completado la Sopa de Letras de Seguridad y Autocuidado.");
+        }, 200);
+      }
+    }
+
+    function addScore(points) {
+      score += points;
+      document.getElementById('score').innerText = score;
+    }
+
+    function resetGame() {
+      score = 0;
+      timeLeft = 600;
+      document.getElementById('score').innerText = score;
+      
+      selectedButtons = [];
+      selectedCoords = [];
+
+      WORDS.forEach(word => {
+        const listItem = document.getElementById(`w-${word}`);
+        if (listItem) {
+          listItem.classList.remove('found');
+          listItem.querySelector('span').innerText = '❌';
+        }
+      });
+
+      document.getElementById('word-list-title').innerText = "Palabras (0/6):";
+
+      generateRandomGrid();
+      createGrid();
+      initTimer();
+    }
+
+    // Inicializar al cargar
+    generateRandomGrid();
+    createGrid();
+    initTimer();
+  </script>
+</body>
+</html>

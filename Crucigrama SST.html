@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crucigrama – SST</title>
+  <style>
+    :root {
+      --bg-dark: #121820;
+      --card-bg: #1e2632;
+      --accent-yellow: #f1c40f;
+      --accent-teal: #1abc9c;
+      --text-light: #ecf0f1;
+      --success-green: #2ecc71;
+      --error-red: #e74c3c;
+      --border-color: #2c3e50;
+      --grid-cell-size: 42px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 10px;
+      border-bottom: 4px solid var(--accent-yellow);
+      margin-bottom: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+      color: var(--accent-yellow);
+      margin: 0 0 10px 0;
+      font-size: 1.8rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .instruction {
+      color: #bdc3c7;
+      font-size: 1.05rem;
+      margin: 0;
+    }
+
+    .crossword-layout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+      align-items: flex-start;
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: 10px;
+      border-left: 6px solid var(--accent-teal);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    /* Tablero del Crucigrama (7 filas x 6 columnas) */
+    .crossword-grid {
+      display: grid;
+      grid-template-columns: repeat(6, var(--grid-cell-size));
+      grid-template-rows: repeat(7, var(--grid-cell-size));
+      gap: 4px;
+      background: #161c24;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      user-select: none;
+    }
+
+    .cell {
+      width: var(--grid-cell-size);
+      height: var(--grid-cell-size);
+      position: relative;
+      background: transparent;
+    }
+
+    .cell.empty {
+      background: #12161f;
+      border-radius: 4px;
+    }
+
+    .cell.active {
+      background: #2c3e50;
+      border: 1px solid #34495e;
+      border-radius: 4px;
+    }
+
+    .cell-number {
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      font-size: 0.7rem;
+      font-weight: bold;
+      color: var(--accent-yellow);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .cell input {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      border: none;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #fff;
+      text-transform: uppercase;
+      outline: none;
+      padding-top: 4px;
+    }
+
+    .cell.correct {
+      background: #1e4620 !important;
+      border-color: var(--success-green) !important;
+    }
+
+    .cell.correct input {
+      color: #2ecc71;
+    }
+
+    /* Pistas */
+    .clues-container {
+      flex: 1;
+      min-width: 280px;
+      background: #161c24;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .clues-container h3 {
+      color: var(--accent-yellow);
+      margin-top: 0;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+      font-size: 1.2rem;
+    }
+
+    .clue-group {
+      margin-bottom: 15px;
+    }
+
+    .clue-group h4 {
+      color: var(--accent-teal);
+      margin: 10px 0 5px 0;
+      font-size: 1rem;
+      text-transform: uppercase;
+    }
+
+    .clue-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .clue-item {
+      padding: 8px 10px;
+      margin: 6px 0;
+      background: #242d3c;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      line-height: 1.3;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.3s;
+    }
+
+    .clue-item.solved {
+      background: #1b382b;
+      color: #a3e4d7;
+    }
+
+    .clue-item .status-icon {
+      font-weight: bold;
+      margin-left: 8px;
+    }
+
+    /* Controles */
+    .controls {
+      text-align: center;
+      margin-top: 25px;
+      width: 100%;
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    .btn-action {
+      background: var(--accent-yellow);
+      color: #121820;
+      border: none;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-action:hover {
+      background: #f39c12;
+    }
+
+    .btn-action:active {
+      transform: scale(0.98);
+    }
+
+    .btn-reset {
+      background: var(--error-red);
+      color: white;
+    }
+
+    .btn-reset:hover {
+      background: #c0392b;
+    }
+
+    @media (max-width: 650px) {
+      :root {
+        --grid-cell-size: 34px;
+      }
+      .crossword-layout {
+        padding: 15px;
+      }
+      .controls {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>🧩 Crucigrama – SST</h1>
+      <p class="instruction"><strong>Instrucción:</strong> Completa las palabras según las pistas en el tablero.</p>
+    </header>
+
+    <div class="crossword-layout">
+      <!-- Grid Crucigrama -->
+      <div class="crossword-grid" id="grid"></div>
+
+      <!-- Lista de Pistas -->
+      <div class="clues-container">
+        <h3>Pistas</h3>
+        
+        <div class="clue-group">
+          <h4>Horizontal (➡️)</h4>
+          <ul class="clue-list">
+            <li class="clue-item" id="clue-1">
+              <span><strong>1.</strong> Elemento que protege la cabeza.</span>
+              <span class="status-icon" id="status-1">❌</span>
+            </li>
+            <li class="clue-item" id="clue-2">
+              <span><strong>2.</strong> Elemento utilizado para proteger los ojos.</span>
+              <span class="status-icon" id="status-2">❌</span>
+            </li>
+            <li class="clue-item" id="clue-3">
+              <span><strong>3.</strong> Acción de detenerse unos minutos durante la jornada.</span>
+              <span class="status-icon" id="status-3">❌</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="clue-group">
+          <h4>Vertical (⬇️)</h4>
+          <ul class="clue-list">
+            <li class="clue-item" id="clue-4">
+              <span><strong>4.</strong> Estado de bienestar físico y mental.</span>
+              <span class="status-icon" id="status-4">❌</span>
+            </li>
+            <li class="clue-item" id="clue-5">
+              <span><strong>5.</strong> Elemento que protege las manos.</span>
+              <span class="status-icon" id="status-5">❌</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Controles -->
+      <div class="controls">
+        <button class="btn-action" onclick="checkAnswers()">Verificar Crucigrama</button>
+        <button class="btn-action btn-reset" onclick="resetCrossword()">🔄 Reiniciar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Definición de palabras con sus posiciones perfectamente alineadas
+    const WORDS = {
+      1: { id: 1, name: "CASCO", dir: "H", row: 0, col: 0, length: 5 },
+      2: { id: 2, name: "GAFAS", dir: "H", row: 1, col: 1, length: 5 },
+      3: { id: 3, name: "PAUSA", dir: "H", row: 3, col: 0, length: 5 },
+      4: { id: 4, name: "SALUD", dir: "V", row: 0, col: 2, length: 5 },
+      5: { id: 5, name: "GUANTE", dir: "V", row: 1, col: 1, length: 6 }
+    };
+
+    const ROWS = 7;
+    const COLS = 6;
+    let cellMap = {}; // Guarda referencias a los elementos input
+
+    function buildGrid() {
+      const gridContainer = document.getElementById('grid');
+      gridContainer.innerHTML = '';
+
+      let activeCells = {};
+      let numbersMap = {};
+
+      // Mapear todas las celdas necesarias y asignar números de inicio
+      for (let key in WORDS) {
+        const w = WORDS[key];
+        
+        // Asignar número al inicio de la palabra (si coincide con otra, combina números)
+        const startKey = `${w.row}_${w.col}`;
+        numbersMap[startKey] = numbersMap[startKey] ? `${numbersMap[startKey]},${w.id}` : `${w.id}`;
+
+        for (let i = 0; i < w.length; i++) {
+          let r = w.dir === 'H' ? w.row : w.row + i;
+          let c = w.dir === 'H' ? w.col + i : w.col;
+          activeCells[`${r}_${c}`] = true;
+        }
+      }
+
+      // Construir la rejilla de 7x6
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const cellDiv = document.createElement('div');
+          const cellKey = `${r}_${c}`;
+
+          if (activeCells[cellKey]) {
+            cellDiv.className = 'cell active';
+
+            if (numbersMap[cellKey]) {
+              const numSpan = document.createElement('span');
+              numSpan.className = 'cell-number';
+              numSpan.innerText = numbersMap[cellKey];
+              cellDiv.appendChild(numSpan);
+            }
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.maxLength = 1;
+            input.dataset.row = r;
+            input.dataset.col = c;
+
+            // Controladores de eventos para navegación con teclado
+            input.addEventListener('input', (e) => handleInput(e, r, c));
+            input.addEventListener('keydown', (e) => handleKeyDown(e, r, c));
+
+            cellDiv.appendChild(input);
+            cellMap[cellKey] = input;
+          } else {
+            cellDiv.className = 'cell empty';
+          }
+
+          gridContainer.appendChild(cellDiv);
+        }
+      }
+    }
+
+    function handleInput(e, r, c) {
+      const val = e.target.value.toUpperCase();
+      e.target.value = val;
+
+      if (val !== '') {
+        // Prioridad de avance: derecha (horizontal), luego abajo (vertical)
+        let nextInput = cellMap[`${r}_${c + 1}`] || cellMap[`${r + 1}_${c}`];
+        if (nextInput) {
+          nextInput.focus();
+        }
+      }
+      checkWordRealtime();
+    }
+
+    function handleKeyDown(e, r, c) {
+      if (e.key === 'Backspace' && e.target.value === '') {
+        let prevInput = cellMap[`${r}_${c - 1}`] || cellMap[`${r - 1}_${c}`];
+        if (prevInput) {
+          prevInput.focus();
+        }
+      }
+    }
+
+    function checkAnswers() {
+      let allCorrect = true;
+
+      for (let key in WORDS) {
+        const w = WORDS[key];
+        let currentWord = '';
+
+        for (let i = 0; i < w.length; i++) {
+          let r = w.dir === 'H' ? w.row : w.row + i;
+          let c = w.dir === 'H' ? w.col + i : w.col;
+          const input = cellMap[`${r}_${c}`];
+          currentWord += input ? input.value.toUpperCase() : '';
+        }
+
+        const clueItem = document.getElementById(`clue-${w.id}`);
+        const statusSpan = document.getElementById(`status-${w.id}`);
+
+        if (currentWord === w.name) {
+          clueItem.classList.add('solved');
+          statusSpan.innerText = '✅';
+
+          for (let i = 0; i < w.length; i++) {
+            let r = w.dir === 'H' ? w.row : w.row + i;
+            let c = w.dir === 'H' ? w.col + i : w.col;
+            cellMap[`${r}_${c}`].parentElement.classList.add('correct');
+          }
+        } else {
+          allCorrect = false;
+          clueItem.classList.remove('solved');
+          statusSpan.innerText = '❌';
+        }
+      }
+
+      if (allCorrect) {
+        setTimeout(() => {
+          alert("🎉 ¡Excelente! Has completado el Crucigrama de SST correctamente.");
+        }, 200);
+      }
+    }
+
+    function checkWordRealtime() {
+      for (let key in WORDS) {
+        const w = WORDS[key];
+        let currentWord = '';
+
+        for (let i = 0; i < w.length; i++) {
+          let r = w.dir === 'H' ? w.row : w.row + i;
+          let c = w.dir === 'H' ? w.col + i : w.col;
+          const input = cellMap[`${r}_${c}`];
+          currentWord += input ? input.value.toUpperCase() : '';
+        }
+
+        if (currentWord === w.name) {
+          document.getElementById(`clue-${w.id}`).classList.add('solved');
+          document.getElementById(`status-${w.id}`).innerText = '✅';
+
+          for (let i = 0; i < w.length; i++) {
+            let r = w.dir === 'H' ? w.row : w.row + i;
+            let c = w.dir === 'H' ? w.col + i : w.col;
+            cellMap[`${r}_${c}`].parentElement.classList.add('correct');
+          }
+        }
+      }
+    }
+
+    function resetCrossword() {
+      for (let key in cellMap) {
+        cellMap[key].value = '';
+        cellMap[key].parentElement.classList.remove('correct');
+      }
+
+      for (let key in WORDS) {
+        const w = WORDS[key];
+        document.getElementById(`clue-${w.id}`).classList.remove('solved');
+        document.getElementById(`status-${w.id}`).innerText = '❌';
+      }
+    }
+
+    // Inicializar el crucigrama
+    buildGrid();
+  </script>
+</body>
+</html>

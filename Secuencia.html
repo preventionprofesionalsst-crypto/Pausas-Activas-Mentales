@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reto de Secuencias - Interactivo</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --success: #10b981;
+      --success-bg: #ecfdf5;
+      --error: #ef4444;
+      --error-bg: #fef2f2;
+      --border: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .container {
+      max-width: 680px;
+      width: 100%;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+
+    .header {
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 16px;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      margin: 0 0 8px 0;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin: 0 0 12px 0;
+    }
+
+    .badge {
+      display: inline-block;
+      background: #eef2ff;
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .sequence-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .sequence-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .sequence-card.correct {
+      background: var(--success-bg);
+      border-color: var(--success);
+    }
+
+    .sequence-card.incorrect {
+      background: var(--error-bg);
+      border-color: var(--error);
+    }
+
+    .sequence-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .sequence-text {
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .sequence-num {
+      color: var(--primary);
+      margin-right: 6px;
+    }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .input-answer {
+      width: 70px;
+      padding: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      text-align: center;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-answer:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-check {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: background 0.2s;
+    }
+
+    .btn-check:hover {
+      background: var(--primary-hover);
+    }
+
+    .feedback {
+      font-size: 0.875rem;
+      font-weight: 500;
+      display: none;
+    }
+
+    .sequence-card.correct .feedback {
+      display: block;
+      color: var(--success);
+    }
+
+    .sequence-card.incorrect .feedback {
+      display: block;
+      color: var(--error);
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .btn-action {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: var(--text);
+    }
+
+    .btn-action:hover {
+      opacity: 0.9;
+    }
+
+    .footer-note {
+      margin-top: 24px;
+      padding: 14px;
+      background: #f1f5f9;
+      border-left: 4px solid var(--primary);
+      border-radius: 0 8px 8px 0;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>🧩 Completa la secuencia</h1>
+      <p class="subtitle">Observa cada secuencia, analiza el patrón e ingresa el número que falta.</p>
+      <span class="badge">Dificultad: ⭐⭐⭐☆☆ Intermedia</span>
+    </div>
+
+    <div class="sequence-list" id="sequenceContainer">
+      <!-- Las secuencias se renderizan dinámicamente -->
+    </div>
+
+    <div class="actions">
+      <button class="btn-action btn-primary" onclick="checkAll()">Verificar Todo 🚀</button>
+      <button class="btn-action btn-secondary" onclick="resetQuiz()">Reiniciar 🔄</button>
+    </div>
+
+    <div class="footer-note">
+      <strong>🎯 Objetivo:</strong> Estimular la atención sostenida, memoria de trabajo y razonamiento lógico identificando patrones en pausas activas.
+    </div>
+  </div>
+
+  <script>
+    const data = [
+      { id: 1, sequence: "3 – 6 – 9 – ___ – 15", answer: "12", pattern: "+3" },
+      { id: 2, sequence: "4 – 8 – 16 – ___ – 64", answer: "32", pattern: "×2" },
+      { id: 3, sequence: "30 – 27 – 23 – ___ – 12", answer: "18", pattern: "−3, −4, −5, −6" },
+      { id: 4, sequence: "2 – 5 – 10 – ___ – 26", answer: "17", pattern: "+3, +5, +7, +9" },
+      { id: 5, sequence: "40 – 35 – 37 – 32 – ___ – 29", answer: "34", pattern: "−5, +2, −5, +2, −5" },
+      { id: 6, sequence: "1 – 4 – 9 – ___ – 25", answer: "16", pattern: "Cuadrados: 1², 2², 3², 4², 5²" },
+      { id: 7, sequence: "5 – 10 – 8 – 16 – ___ – 32", answer: "14", pattern: "×2, −2, ×2, −2, ×2" },
+      { id: 8, sequence: "100 – 90 – 81 – ___ – 65", answer: "73", pattern: "−10, −9, −8, −7, −6" }
+    ];
+
+    function renderSequences() {
+      const container = document.getElementById('sequenceContainer');
+      container.innerHTML = '';
+
+      data.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'sequence-card';
+        card.id = `card-${item.id}`;
+
+        card.innerHTML = `
+          <div class="sequence-main">
+            <div class="sequence-text">
+              <span class="sequence-num">${item.id}.</span> ${item.sequence}
+            </div>
+            <div class="input-group">
+              <input type="number" class="input-answer" id="input-${item.id}" placeholder="?" onkeydown="handleKeyPress(event, ${item.id})">
+              <button class="btn-check" onclick="checkSingle(${item.id})">Comprobar</button>
+            </div>
+          </div>
+          <div class="feedback" id="feedback-${item.id}"></div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function checkSingle(id) {
+      const item = data.find(d => d.id === id);
+      const input = document.getElementById(`input-${id}`);
+      const card = document.getElementById(`card-${id}`);
+      const feedback = document.getElementById(`feedback-${id}`);
+      const userVal = input.value.trim();
+
+      if (!userVal) {
+        card.className = 'sequence-card';
+        feedback.style.display = 'none';
+        return;
+      }
+
+      if (userVal === item.answer) {
+        card.className = 'sequence-card correct';
+        feedback.textContent = `¡Correcto! 🎉 Patrón: ${item.pattern}`;
+      } else {
+        card.className = 'sequence-card incorrect';
+        feedback.textContent = `Incorrecto. ¡Sigue intentando!`;
+      }
+    }
+
+    function handleKeyPress(e, id) {
+      if (e.key === 'Enter') {
+        checkSingle(id);
+      }
+    }
+
+    function checkAll() {
+      data.forEach(item => checkSingle(item.id));
+    }
+
+    function resetQuiz() {
+      data.forEach(item => {
+        const input = document.getElementById(`input-${item.id}`);
+        const card = document.getElementById(`card-${item.id}`);
+        input.value = '';
+        card.className = 'sequence-card';
+      });
+    }
+
+    // Inicializar
+    renderSequences();
+  </script>
+
+</body>
+</html>
