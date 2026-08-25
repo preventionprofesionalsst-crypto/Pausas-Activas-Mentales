@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Encuentra las 5 Diferencias - Pausa Activa</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --success: #16a34a;
+    }
+
+    * { 
+      box-sizing: border-box; 
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      margin: 0;
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+
+    .header {
+      border-bottom: 2px solid #f1f5f9;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    h1 { font-size: 1.3rem; margin: 0 0 6px 0; }
+    .subtitle { color: var(--text-muted); font-size: 0.85rem; margin: 0; }
+
+    .counter-box {
+      margin-top: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--primary);
+      background: #eff6ff;
+      padding: 8px 16px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    @media (min-width: 640px) {
+      .game-grid { grid-template-columns: 1fr 1fr; }
+      .container { padding: 24px; }
+      h1 { font-size: 1.5rem; }
+      .subtitle { font-size: 0.95rem; }
+      .header { text-align: left; }
+    }
+
+    .image-card { text-align: center; }
+
+    .image-card h3 {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin: 0 0 8px 0;
+    }
+
+    .svg-wrapper {
+      position: relative;
+      border: 2px solid #cbd5e1;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+      touch-action: manipulation;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Solución CSS clave para iOS */
+    .diff-group {
+      cursor: pointer !important;
+      pointer-events: all !important;
+      -webkit-touch-callout: none;
+    }
+
+    .diff-target {
+      fill: red;
+      opacity: 0.0001; 
+      cursor: pointer !important;
+      pointer-events: all !important;
+    }
+
+    .marker {
+      fill: none;
+      stroke: var(--success);
+      stroke-width: 3.5;
+      stroke-dasharray: 5, 3;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .diff-group.found .marker {
+      opacity: 1;
+    }
+
+    .diff-group.found .diff-target {
+      pointer-events: none !important;
+      cursor: default !important;
+    }
+
+    .differences-list {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+
+    .differences-list h4 { margin: 0 0 8px 0; font-size: 0.9rem; }
+
+    .diff-item {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .diff-item.found {
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    .actions { display: flex; gap: 10px; }
+
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      background: var(--primary);
+      color: white;
+      transition: opacity 0.2s;
+    }
+
+    .btn-secondary { background: #e2e8f0; color: var(--text); }
+    .btn:active { opacity: 0.7; }
+
+    .footer-note {
+      margin-top: 16px;
+      padding: 12px;
+      background: #f1f5f9;
+      border-left: 4px solid var(--primary);
+      border-radius: 0 8px 8px 0;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>🔍 Encuentra las 5 Diferencias</h1>
+      <p class="subtitle">Compara la escena original con la escena modificada y toca las diferencias encontradas.</p>
+      <div class="counter-box" id="counter">Diferencias encontradas: 0 / 5</div>
+    </div>
+
+    <div class="game-grid">
+      <!-- Escena 1: Original -->
+      <div class="image-card">
+        <h3>Escena Original</h3>
+        <div class="svg-wrapper">
+          <svg viewBox="0 0 400 300">
+            <rect width="400" height="220" fill="#e2e8f0"/>
+            <rect y="220" width="400" height="80" fill="#cbd5e1"/>
+            
+            <rect x="30" y="30" width="80" height="70" fill="#bae6fd" stroke="#64748b" stroke-width="4"/>
+            <line x1="70" y1="30" x2="70" y2="100" stroke="#64748b" stroke-width="2"/>
+            <line x1="30" y1="65" x2="110" y2="65" stroke="#64748b" stroke-width="2"/>
+
+            <rect x="30" y="190" width="340" height="15" fill="#94a3b8"/>
+            <rect x="50" y="205" width="16" height="65" fill="#475569"/>
+            <rect x="330" y="205" width="16" height="65" fill="#475569"/>
+
+            <!-- 1. Casco -->
+            <path d="M 60 190 A 20 20 0 0 1 100 190 Z" fill="#eab308"/>
+            <rect x="55" y="188" width="50" height="4" rx="2" fill="#ca8a04"/>
+
+            <!-- 2. Llave inglesa -->
+            <rect x="120" y="182" width="40" height="6" rx="2" fill="#64748b" transform="rotate(-15 120 182)"/>
+
+            <!-- 3. Señal de advertencia -->
+            <polygon points="320,40 350,90 290,90" fill="#f97316"/>
+            <polygon points="320,48 342,85 298,85" fill="#fef08a"/>
+            <text x="320" y="80" font-weight="bold" font-size="20" text-anchor="middle" fill="#000">!</text>
+
+            <!-- 4. Caja de herramientas -->
+            <rect x="180" y="155" width="60" height="35" rx="3" fill="#ef4444"/>
+            <rect x="200" y="148" width="20" height="7" rx="2" fill="#9f1239"/>
+
+            <!-- 5. Botella de agua -->
+            <rect x="260" y="150" width="16" height="40" rx="3" fill="#38bdf8"/>
+            <rect x="264" y="144" width="8" height="6" fill="#0284c7"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Escena 2: Modificada -->
+      <div class="image-card">
+        <h3>Toca aquí las diferencias 🎯</h3>
+        <div class="svg-wrapper">
+          <svg viewBox="0 0 400 300">
+            <rect width="400" height="220" fill="#e2e8f0"/>
+            <rect y="220" width="400" height="80" fill="#cbd5e1"/>
+            
+            <rect x="30" y="30" width="80" height="70" fill="#bae6fd" stroke="#64748b" stroke-width="4"/>
+            <line x1="70" y1="30" x2="70" y2="100" stroke="#64748b" stroke-width="2"/>
+            <line x1="30" y1="65" x2="110" y2="65" stroke="#64748b" stroke-width="2"/>
+
+            <rect x="30" y="190" width="340" height="15" fill="#94a3b8"/>
+            <rect x="50" y="205" width="16" height="65" fill="#475569"/>
+            <rect x="330" y="205" width="16" height="65" fill="#475569"/>
+
+            <!-- 2. Llave inglesa -->
+            <rect x="120" y="175" width="40" height="6" rx="2" fill="#64748b" transform="rotate(35 120 175)"/>
+
+            <!-- 4. Caja de herramientas -->
+            <rect x="180" y="155" width="60" height="35" rx="3" fill="#3b82f6"/>
+            <rect x="200" y="148" width="20" height="7" rx="2" fill="#1d4ed8"/>
+
+            <!-- CAPAS INTERACTIVAS (Optimizadas con role="button" para iOS Safari) -->
+            <g class="diff-group" id="group-0" data-index="0" role="button" tabindex="0">
+              <circle cx="80" cy="175" r="38" class="diff-target"/>
+              <circle cx="80" cy="175" r="38" class="marker"/>
+            </g>
+
+            <g class="diff-group" id="group-1" data-index="1" role="button" tabindex="0">
+              <circle cx="135" cy="180" r="38" class="diff-target"/>
+              <circle cx="135" cy="180" r="38" class="marker"/>
+            </g>
+
+            <g class="diff-group" id="group-2" data-index="2" role="button" tabindex="0">
+              <circle cx="320" cy="65" r="42" class="diff-target"/>
+              <circle cx="320" cy="65" r="42" class="marker"/>
+            </g>
+
+            <g class="diff-group" id="group-3" data-index="3" role="button" tabindex="0">
+              <circle cx="210" cy="170" r="38" class="diff-target"/>
+              <circle cx="210" cy="170" r="38" class="marker"/>
+            </g>
+
+            <g class="diff-group" id="group-4" data-index="4" role="button" tabindex="0">
+              <circle cx="268" cy="170" r="38" class="diff-target"/>
+              <circle cx="268" cy="170" r="38" class="marker"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="differences-list">
+      <h4>Progreso del juego:</h4>
+      <div class="diff-item" id="item-0">❓ Diferencia 1: Por descubrir...</div>
+      <div class="diff-item" id="item-1">❓ Diferencia 2: Por descubrir...</div>
+      <div class="diff-item" id="item-2">❓ Diferencia 3: Por descubrir...</div>
+      <div class="diff-item" id="item-3">❓ Diferencia 4: Por descubrir...</div>
+      <div class="diff-item" id="item-4">❓ Diferencia 5: Por descubrir...</div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-secondary" id="btn-reset">Reiniciar 🔄</button>
+      <button class="btn" id="btn-reveal">Revelar Todas 💡</button>
+    </div>
+
+    <div class="footer-note">
+      <strong>🎯 Objetivo:</strong> Trabajar atención, concentración y memoria visual durante tu pausa activa.
+    </div>
+  </div>
+
+  <script>
+    const totalDifferences = 5;
+    const foundStatus = [false, false, false, false, false];
+
+    const descriptions = [
+      "Falta un casco de seguridad",
+      "Cambió la posición de la herramienta",
+      "Desapareció la señal de advertencia",
+      "Cambió el color de la caja de herramientas",
+      "Falta la botella de agua"
+    ];
+
+    function markFound(index) {
+      if (foundStatus[index]) return;
+      
+      foundStatus[index] = true;
+      document.getElementById(`group-${index}`).classList.add('found');
+      
+      const listItem = document.getElementById(`item-${index}`);
+      listItem.classList.add('found');
+      listItem.textContent = `✅ Diferencia ${index + 1}: ${descriptions[index]}`;
+
+      updateCounter();
+    }
+
+    function updateCounter() {
+      const count = foundStatus.filter(Boolean).length;
+      document.getElementById('counter').textContent = `Diferencias encontradas: ${count} / ${totalDifferences}`;
+    }
+
+    function resetGame() {
+      for (let i = 0; i < totalDifferences; i++) {
+        foundStatus[i] = false;
+        document.getElementById(`group-${i}`).classList.remove('found');
+        const listItem = document.getElementById(`item-${i}`);
+        listItem.classList.remove('found');
+        listItem.textContent = `❓ Diferencia ${i + 1}: Por descubrir...`;
+      }
+      updateCounter();
+    }
+
+    function revealAll() {
+      for (let i = 0; i < totalDifferences; i++) {
+        markFound(i);
+      }
+    }
+
+    // Solución para la ejecución de eventos en iOS WebKit
+    document.querySelectorAll('.diff-group').forEach(group => {
+      const handleTap = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const index = parseInt(group.getAttribute('data-index'), 10);
+        markFound(index);
+      };
+
+      // Listener para click/tap estándar
+      group.addEventListener('click', handleTap, false);
+      
+      // Listener explícito para iOS Touch Event
+      group.addEventListener('touchend', handleTap, false);
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', resetGame);
+    document.getElementById('btn-reveal').addEventListener('click', revealAll);
+  </script>
+
+</body>
+</html>
